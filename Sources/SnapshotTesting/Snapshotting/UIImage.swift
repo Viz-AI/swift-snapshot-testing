@@ -25,7 +25,8 @@ extension Diffing where Value == UIImage {
       toData: { $0.pngData() ?? emptyImage().pngData()! },
       fromData: { UIImage(data: $0, scale: imageScale)! }
     ) { old, new in
-      guard let message = compare(old, new, precision: precision, perceptualPrecision: perceptualPrecision) else { return nil }
+      let message = compare(old, new, precision: precision, perceptualPrecision: perceptualPrecision)
+        
       let difference = SnapshotTesting.diff(old, new)
       let oldAttachment = XCTAttachment(image: old)
       oldAttachment.name = "reference"
@@ -37,6 +38,9 @@ extension Diffing where Value == UIImage {
       let differenceAttachment = XCTAttachment(image: difference)
       differenceAttachment.name = "difference"
       differenceAttachment.lifetime = .keepAlways
+        
+      guard let message = message else { return nil }
+        
       return (
         message,
         [oldAttachment, newAttachment, differenceAttachment]
@@ -200,7 +204,7 @@ func perceptuallyCompare(_ old: CIImage, _ new: CIImage, pixelPrecision: Float, 
   )
   let actualPixelPrecision = 1 - averagePixel
   guard actualPixelPrecision < pixelPrecision else { 
-      return "succeeded! image precision \(actualPixelPrecision) greated than required \(pixelPrecision)"      
+      return "succeeded image precision \(actualPixelPrecision) greated than required \(pixelPrecision)"      
   }
   var maximumDeltaE: Float = 0
   context.render(
